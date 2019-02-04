@@ -1,91 +1,126 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom'
+// import web3 from './Web3_Setup'
+import web3 from 'web3'
+import TruffleContract from 'truffle-contract'
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Homepage from './components/pages/homepage/Homepage'
 import NewBlog from './components/pages/new_blog/NewBlog'
 import Header from './components/pages/layout/Header'
-import Web3 from 'web3';
+import BlogStorageContract from './contracts/BlogStorage'
+import ipfs from './IPFS';
 
 
 // import getWeb3 from "./utils/getWeb3";
 // import $ from "jquery";
 import './App.css';
+import Web3 from "web3";
 
 class App extends Component {
 
-  state = {
-    blogs: [
-      {
-        id: 1,
-        title: 'Blog',
-        url: 'https://reactjs.org/docs/create-a-new-react-app.html'
-      },
-      {
-        id: 2,
-        title: 'blog 2',
-        url: 'randomsklejfesoiuhf'
+  constructor(props) {
+
+    super(props);
+
+    this.state = {
+      blogs: [
+        {
+          id: 1,
+          title: 'Blog',
+          url: 'https://reactjs.org/docs/create-a-new-react-app.html'
+        },
+        {
+          id: 2,
+          title: 'blog 2',
+          url: 'randomsklejfesoiuhf'
+        }
+      ],
+      contract: null,
+      web3: null,
+      accounts: null,
+      loading: false
+    };
+
+    let web3 = window.web3;
+
+    if (typeof web3 != 'undefined') {
+      this.web3Provider = web3.currentProvider
+    } else {
+      this.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545')
+    }
+
+    this.web3 = new Web3(this.web3Provider)
+    this.BlogStorageContract = TruffleContract(BlogStorageContract)
+    this.BlogStorageContract.setProvider(this.web3Provider)
+
+  }
+
+  componentDidMount() {
+    // TODO: Refactor with promise chain
+    this.web3.eth.getCoinbase((err, account) => {
+      this.setState({ account })
+      this.BlogStorageContract.deployed().then((BlogStorageInstance) => {
+        this.BlogStorageInstance = BlogStorageInstance
+      });
+    });
+  }
+
+  getPosts = async () => {
+    // const { contract } = this.state;
+    // const numPosts = await contract.methods.getPostCount().call();
+    // console.log("Num Posts: " + numPosts);
+
+  }
+
+  addBlog = async (title, blog) => {
+    // TODO add blog to IPFS and Ethereum
+
+    let buffer = await Buffer.from(blog);
+    console.log("buffer: ", buffer);
+
+    ipfs.files.add(buffer, async (err, result) => {
+      if (err) {
+        console.error(err);
+        return;
       }
-    ],
-    contract: ''
+      console.log("Result: ", result[0].hash, );
+
+      const { account } = this.state;
+
+      await this.BlogStorageInstance.addPost(result[0].hash, title, {from: account});
+
+
+    });
   }
 
-  connectWeb3 = async () => {
-    const web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
-    const accounts = await web3.eth.getAccounts();
-
-  //  TODO get contract instance and deploy
-  //  TODO add contract to state
-  }
-
-  // TODO connect to IPFS
-  connectToIPFS = async () => {
-
-  }
-
-  // componentDidMount = async () => {
-  //   try {
-  //     // Get network provider and web3 instance.
-  //     const web3 = await getWeb3();
-  //
-  //     // Use web3 to get the user's accounts.
-  //     // const accounts = await web3.eth.getAccounts();
-  //
-  //     // Get the contract instance.
-  //     // const networkId = await web3.eth.net.getId();
-  //     // const deployedNetwork = SimpleStorageContract.networks[networkId];
-  //     // const instance = new web3.eth.Contract(
-  //     //   SimpleStorageContract.abi,
-  //     //   deployedNetwork && deployedNetwork.address,
-  //     // );
-  //     //
-  //     // // Set web3, accounts, and contract to the state, and then proceed with an
-  //     // // example of interacting with the contract's methods.
-  //     // this.setState({ web3, accounts, contract: instance, page: 'homepage'}, this.getPosts);
-  //   } catch (error) {
-  //     // Catch any errors for any of the above operations.
-  //     alert(
-  //       `Failed to load web3, accounts, or contract. Check console for details.`,
-  //     );
-  //     console.error(error);
-  //   }
-  // };
 
   render() {
-    this.connectWeb3();
-    return (
-      <Router>
-        <div className={"App"}>
-          <div className={"container"}>
-            <Header/>
-            <Route exact path={"/"} render={props => (
-              <React.Fragment>
-                <Homepage blogs={this.state.blogs}/>
-              </React.Fragment>
-            )}/>
-            <Route path="/newblog" component={NewBlog}/>
-          </div>
-        </div>
-      </Router>
-    );
+    {
+      if (this.state.loading) {
+        return (
+          <h1>Loading</h1>);
+      } else {
+        return (
+          <Router>
+            <div className={"App"}>
+              <div className={"container"}>
+                <Header/>
+                <Route exact path={"/"} render={props => (
+                  <React.Fragment>
+                    <Homepage blogs={this.state.blogs}/>
+                  </React.Fragment>
+                )}/>
+                <Route path="/newblog" render={props => (
+                  <React.Fragment>
+                    <NewBlog addBlog={this.addBlog}/>
+                  </React.Fragment>
+                )}/>
+              </div>
+            </div>
+          </Router>
+        );
+      }
+    }
   }
 }
 
