@@ -4,7 +4,7 @@ import {HomepageItems} from "./HomepageItems";
 
 class Homepage extends Component {
   render() {
-    return this.props.blogs.map((blog) => (
+    return this.props.userBlogs.map((blog) => (
       <HomepageItems key = {blog.id} blog = {blog} />
     ));
 
@@ -13,7 +13,7 @@ class Homepage extends Component {
 
 //PropTypes
 Homepage.propTypes = {
-  blogs: PropTypes.array.isRequired
+  userBlogs: PropTypes.array.isRequired
 }
 
 export default Homepage

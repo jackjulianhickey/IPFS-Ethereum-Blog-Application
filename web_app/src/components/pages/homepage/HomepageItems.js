@@ -16,7 +16,7 @@ export class HomepageItems extends Component {
   render() {
     return (
       <div style={this.getStyle()}>
-        <p><a href={this.props.blog.url} style={{color: 'white'}}> { this.props.blog.title } </a></p>
+        <p><a href={this.props.blog.hash} style={{color: 'white'}}> { this.props.blog.title } </a></p>
       </div>
     );
   }
