@@ -23,22 +23,12 @@ class App extends Component {
     super(props);
 
     this.state = {
-      blogs: [
-        {
-          id: 1,
-          title: 'Blog',
-          url: 'https://reactjs.org/docs/create-a-new-react-app.html'
-        },
-        {
-          id: 2,
-          title: 'blog 2',
-          url: 'randomsklejfesoiuhf'
-        }
-      ],
       contract: null,
       web3: null,
       accounts: null,
-      loading: false
+      loading: false,
+      userBlogs: [],
+      userPostsNum: null,
     };
 
     let web3 = window.web3;
@@ -59,17 +49,45 @@ class App extends Component {
     // TODO: Refactor with promise chain
     this.web3.eth.getCoinbase((err, account) => {
       this.setState({ account })
+      console.log(account)
       this.BlogStorageContract.deployed().then((BlogStorageInstance) => {
-        this.BlogStorageInstance = BlogStorageInstance
+        this.BlogStorageInstance = BlogStorageInstance;
+        this.BlogStorageInstance.postsCount().then((numPostsCount) => {
+          this.setState({userPostsNum: numPostsCount});
+          console.log(this.state.userPostsNum);
+          this.getPosts(numPostsCount);
+        });
       });
     });
   }
 
-  getPosts = async () => {
-    // const { contract } = this.state;
-    // const numPosts = await contract.methods.getPostCount().call();
-    // console.log("Num Posts: " + numPosts);
+  getPosts =  async (numPosts) => {
+    console.log(numPosts)
+    for (let i = numPosts; i >= 1; i--) {
+      let blogId = i;
+      let blogHash =  await this.BlogStorageInstance.getPostHash(i);
+      let blogTitle =  await this.BlogStorageInstance.getPostName(i);
+      let hash = "/ipfs/"+blogHash
+      ipfs.cat(hash, async (err, file) => {
+        console.log(file.toString())
 
+      })
+      let blogSrc = "https://ipfs.io/ipfs/"+blogHash
+
+      let blog = {id: blogId, hash: blogSrc, title: blogTitle};
+
+      this.setState({
+        userBlogs: [...this.state.userBlogs, blog]
+      })
+      //this.state.userBlogs.push(blog);
+    }
+
+
+  }
+
+  numPosts =  () => {
+    let numPosts = this.BlogStorageInstance.getPostCount();
+    return numPosts;
   }
 
   addBlog = async (title, blog) => {
@@ -88,8 +106,6 @@ class App extends Component {
       const { account } = this.state;
 
       await this.BlogStorageInstance.addPost(result[0].hash, title, {from: account});
-
-
     });
   }
 
@@ -107,7 +123,7 @@ class App extends Component {
                 <Header/>
                 <Route exact path={"/"} render={props => (
                   <React.Fragment>
-                    <Homepage blogs={this.state.blogs}/>
+                    <Homepage userBlogs={this.state.userBlogs}/>
                   </React.Fragment>
                 )}/>
                 <Route path="/newblog" render={props => (
