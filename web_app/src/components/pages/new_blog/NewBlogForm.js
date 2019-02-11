@@ -6,7 +6,7 @@ class NewBlogForm extends Component{
 
   render() {
     return (
-      <form onSubmit={this.props.onSubmit} style={{ display: 'block', background: '#333' }}>
+      <form onSubmit={this.props.onSubmit} style={{ display: 'block', background: '#5B5B5B' }}>
         <div>
           <input
             type={"text"}
@@ -17,8 +17,8 @@ class NewBlogForm extends Component{
             onChange={this.props.onChange}/>
         </div>
         <div>
-          <input
-            type={"text"}
+          <textarea
+            rows={'50'}
             name={"blog"}
             style={blogStyle}
             placeholder={"Start your new blog"}
@@ -30,7 +30,7 @@ class NewBlogForm extends Component{
             type="submit"
             value="Submit"
             className="btn"
-            style={{flex: '1'}}
+            style={{flex: '1', background: '#333', marginLeft: '50%'}}
           />
         </div>
       </form>
@@ -40,16 +40,17 @@ class NewBlogForm extends Component{
 }
 
 const blogStyle = {
-  textAlign: 'left',
   marginTop: '10px',
-  padding: '10px',
+  marginLeft: '10px',
   width: '50%',
-  height: '500px'
+  overflowY: 'auto'
+
 }
 
 const titleStyle = {
   textAlign: 'left',
   marginTop: '10px',
+  marginLeft: '10px',
   padding: '10px',
   width: '50%'
 }

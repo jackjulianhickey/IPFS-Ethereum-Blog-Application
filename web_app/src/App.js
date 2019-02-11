@@ -1,18 +1,12 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom'
-// import web3 from './Web3_Setup'
-import web3 from 'web3'
 import TruffleContract from 'truffle-contract'
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Homepage from './components/pages/homepage/Homepage'
 import NewBlog from './components/pages/new_blog/NewBlog'
+import {ViewBlog} from './components/pages/view_blog/ViewBlog'
 import Header from './components/pages/layout/Header'
 import BlogStorageContract from './contracts/BlogStorage'
 import ipfs from './IPFS';
-
-
-// import getWeb3 from "./utils/getWeb3";
-// import $ from "jquery";
 import './App.css';
 import Web3 from "web3";
 
@@ -29,6 +23,8 @@ class App extends Component {
       loading: false,
       userBlogs: [],
       userPostsNum: null,
+      viewBlogHash: null,
+      viewBlogData: null,
     };
 
     let web3 = window.web3;
@@ -68,18 +64,12 @@ class App extends Component {
       let blogHash =  await this.BlogStorageInstance.getPostHash(i);
       let blogTitle =  await this.BlogStorageInstance.getPostName(i);
       let hash = "/ipfs/"+blogHash
-      ipfs.cat(hash, async (err, file) => {
-        console.log(file.toString())
 
-      })
-      let blogSrc = "https://ipfs.io/ipfs/"+blogHash
-
-      let blog = {id: blogId, hash: blogSrc, title: blogTitle};
+      let blog = {id: blogId, hash: blogHash, title: blogTitle};
 
       this.setState({
         userBlogs: [...this.state.userBlogs, blog]
       })
-      //this.state.userBlogs.push(blog);
     }
 
 
@@ -101,7 +91,6 @@ class App extends Component {
         console.error(err);
         return;
       }
-      console.log("Result: ", result[0].hash, );
 
       const { account } = this.state;
 
@@ -109,6 +98,20 @@ class App extends Component {
     });
   }
 
+  selectedBlogPost = async (blogHash) => {
+    this.setState({viewBlogHash: blogHash})
+
+    ipfs.cat(blogHash, async (err, file) => {
+      if(err){
+        console.log(err)
+      } else {
+        console.log(file)
+        this.setState({viewBlogData: file.toString()})
+      }
+
+    })
+
+  }
 
   render() {
     {
@@ -123,12 +126,17 @@ class App extends Component {
                 <Header/>
                 <Route exact path={"/"} render={props => (
                   <React.Fragment>
-                    <Homepage userBlogs={this.state.userBlogs}/>
+                    <Homepage userBlogs={this.state.userBlogs} selectedBlog={this.selectedBlogPost}/>
                   </React.Fragment>
                 )}/>
                 <Route path="/newblog" render={props => (
                   <React.Fragment>
                     <NewBlog addBlog={this.addBlog}/>
+                  </React.Fragment>
+                )}/>
+                <Route path={"/viewblog"} render={props => (
+                  <React.Fragment>
+                    <ViewBlog viewBlogData={this.state.viewBlogData}/>
                   </React.Fragment>
                 )}/>
               </div>
