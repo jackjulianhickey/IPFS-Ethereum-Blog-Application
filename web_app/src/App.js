@@ -4,8 +4,11 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Homepage from './components/pages/homepage/Homepage'
 import NewBlog from './components/pages/new_blog/NewBlog'
 import {ViewBlog} from './components/pages/view_blog/ViewBlog'
+import Userpage from './components/pages/user_page/Userpage'
 import Header from './components/pages/layout/Header'
 import BlogStorageContract from './contracts/BlogStorage'
+import LoginContract from './contracts/Login';
+import Login from './components/pages/login/Login';
 import ipfs from './IPFS';
 import './App.css';
 import Web3 from "web3";
@@ -25,6 +28,7 @@ class App extends Component {
       userPostsNum: null,
       viewBlogHash: null,
       viewBlogData: null,
+      login: false
     };
 
     let web3 = window.web3;
@@ -38,6 +42,8 @@ class App extends Component {
     this.web3 = new Web3(this.web3Provider)
     this.BlogStorageContract = TruffleContract(BlogStorageContract)
     this.BlogStorageContract.setProvider(this.web3Provider)
+    this.LoginContract = TruffleContract(LoginContract)
+    this.LoginContract.setProvider(this.web3Provider)
 
   }
 
@@ -54,7 +60,33 @@ class App extends Component {
           this.getPosts(numPostsCount);
         });
       });
+      this.LoginContract.deployed().then((LoginInstance) => {
+        this.LoginInstance = LoginInstance;
+      })
     });
+  }
+
+  userLogin = async (email) => {
+    console.log(email)
+    if(await this.LoginInstance.signIn(email) == true) {
+      console.log("User Signed In");
+      this.setState({login: true})
+      return
+    }
+    console.log("Failed")
+  }
+
+  userSignUp = async (email, name) => {
+    console.log(email)
+    console.log(name)
+    const { account } = this.state;
+    console.log(account)
+    if(await this.LoginInstance.addUser(email, name, {from: account})) {
+      console.log("User Signed In");
+      this.setState({login: true})
+      return
+    }
+    console.log("Failed")
   }
 
   getPosts =  async (numPosts) => {
@@ -92,6 +124,8 @@ class App extends Component {
         return;
       }
 
+      console.log(result)
+
       const { account } = this.state;
 
       await this.BlogStorageInstance.addPost(result[0].hash, title, {from: account});
@@ -100,6 +134,7 @@ class App extends Component {
 
   selectedBlogPost = async (blogHash) => {
     this.setState({viewBlogHash: blogHash})
+    let testHash = "/ipfs/" + blogHash;
 
     ipfs.cat(blogHash, async (err, file) => {
       if(err){
@@ -118,7 +153,13 @@ class App extends Component {
       if (this.state.loading) {
         return (
           <h1>Loading</h1>);
-      } else {
+      }
+      else if (!this.state.login){
+        return (
+          <Login login={this.userLogin} signUp={this.userSignUp}/>
+        )
+      }
+      else {
         return (
           <Router>
             <div className={"App"}>
@@ -139,6 +180,11 @@ class App extends Component {
                     <ViewBlog viewBlogData={this.state.viewBlogData}/>
                   </React.Fragment>
                 )}/>
+                <Route exact path={"/mypage"} render={props => (
+                  <React.Fragment>
+                    <Userpage userBlogs={this.state.userBlogs} selectedBlog={this.selectedBlogPost}/>
+                  </React.Fragment>
+                )}/>
               </div>
             </div>
           </Router>
@@ -149,3 +195,9 @@ class App extends Component {
 }
 
 export default App;
+
+const loginStyle = {
+  background: '#5B5B5B',
+  margin: '0',
+  height: '100%'
+}

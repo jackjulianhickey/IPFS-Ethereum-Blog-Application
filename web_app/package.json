@@ -5,6 +5,7 @@
   "dependencies": {
     "ipfs": "^0.34.4",
     "ipfs-api": "^26.1.2",
+    "ipfs-mfs": "^0.9.1",
     "jquery": "^3.3.1",
     "prop-types": "latest",
     "react": "^16.7.0",
