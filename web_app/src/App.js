@@ -68,7 +68,7 @@ class App extends Component {
 
   userLogin = async (email) => {
     console.log(email)
-    if(await this.LoginInstance.signIn(email) == true) {
+    if(await this.LoginInstance.signIn(email)) {
       console.log("User Signed In");
       this.setState({login: true})
       return

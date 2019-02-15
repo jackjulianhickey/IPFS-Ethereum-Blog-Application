@@ -14,10 +14,17 @@ contract Login {
 
     uint public numUsers;
 
-    function addUser(string memory _email, string memory _name) public payable {
+    function addUser(string memory _email, string memory _name) public payable returns (bool){
+        User memory user = users[msg.sender];
+
+        require(user.creator != msg.sender);
+
+        require((uint(keccak256(abi.encodePacked(user.email)))) != (uint(keccak256(abi.encodePacked(_email)))));
+
         numUsers++;
-        uint[] memory postIDs;
+        uint[] storage postIDs;
         users[msg.sender] = User(numUsers, _email, _name, msg.sender, 0, postIDs);
+        return true;
     }
 
     function getNumUserPosts() public view returns (uint) {
@@ -29,15 +36,11 @@ contract Login {
     function signIn(string memory _email) public view returns (bool) {
         User memory user = users[msg.sender];
 
-        if (user.creator != msg.sender) {
-            return false;
-        }
+        require((uint(keccak256(abi.encodePacked(user.email)))) == (uint(keccak256(abi.encodePacked(_email)))));
 
-        if ((uint(keccak256(abi.encodePacked(user.email)))) == (uint(keccak256(abi.encodePacked(_email))))) {
-            return true;
-        }
+        require(msg.sender == user.creator);
 
-        return false;
+        return true;
 
     }
 

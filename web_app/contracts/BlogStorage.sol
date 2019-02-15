@@ -25,11 +25,6 @@ contract BlogStorage {
 
     }
 
-    function getMyPostCount() public view returns (uint) {
-        uint myPosts = 0;
-
-    }
-
     function getPostCount() public view returns (uint) {
         return postsCount;
     }
