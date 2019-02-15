@@ -19,7 +19,7 @@ class Login extends Component{
 
   onSubmitSignUp = (e) => {
     e.preventDefault();
-    this.props.signUp(this.state.email, this.state.userName);
+    this.props.signUp(this.state.newEmail, this.state.userName);
     this.setState({ email: '' });
   }
 
