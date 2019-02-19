@@ -13,10 +13,12 @@ contract BlogStorage {
     struct User {
         uint id;
         string email;
-        string name;
         address creator;
         uint postCount;
+        bool registered;
+        uint num_following;
         mapping(uint => uint) postIDs;
+        mapping(uint => address) following;
     }
 
     mapping(uint => Post) public posts;
@@ -61,12 +63,11 @@ contract BlogStorage {
     }
 
 
-    function addUser(string memory _email, string memory _name) public payable returns (bool){
-        require(!registered[msg.sender]);
-//        require((uint(keccak256(abi.encodePacked(users[msg.sender].email)))) != (uint(keccak256(abi.encodePacked(_email)))));
+    function addUser(string memory _email) public payable returns (bool){
+        require(!users[msg.sender].registered);
+        require((uint(keccak256(abi.encodePacked(users[msg.sender].email)))) != (uint(keccak256(abi.encodePacked(_email)))));
 
-        users[msg.sender] = User(numUsers, _email, _name, msg.sender, 0);
-        registered[msg.sender] = true;
+        users[msg.sender] = User(numUsers, _email, msg.sender, 0, true, 0);
         return true;
     }
 
@@ -75,7 +76,7 @@ contract BlogStorage {
     }
 
     function signIn(string memory _email) public view returns (bool) {
-        require(registered[msg.sender]);
+        require(users[msg.sender].registered);
         require((uint(keccak256(abi.encodePacked(users[msg.sender].email)))) == (uint(keccak256(abi.encodePacked(_email)))));
 
         return true;

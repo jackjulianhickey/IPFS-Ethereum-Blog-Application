@@ -77,12 +77,10 @@ class App extends Component {
     console.log("Failed")
   }
 
-  userSignUp = async (email, name) => {
+  userSignUp = async (email) => {
     console.log(email)
-    console.log(name)
     const { account } = this.state;
-    console.log(account)
-    if(await this.BlogStorageInstance.addUser(email, name, {from: account})) {
+    if(await this.BlogStorageInstance.addUser(email, {from: account})) {
       console.log("User Signed In");
       this.setState({login: true})
       return
