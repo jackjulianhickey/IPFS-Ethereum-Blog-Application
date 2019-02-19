@@ -1,14 +1,22 @@
 pragma solidity 0.5.0;
 
 contract Login {
+
+    struct Post {
+        uint userPostId;
+        uint postId;
+    }
+
     struct User {
         uint id;
         string email;
         string name;
         address creator;
         uint postCount;
-        uint[] postIDs;
+        uint [] postIDs;
     }
+
+
 
     mapping(address => User) public users;
 
@@ -21,9 +29,7 @@ contract Login {
 
         require((uint(keccak256(abi.encodePacked(user.email)))) != (uint(keccak256(abi.encodePacked(_email)))));
 
-        numUsers++;
-        uint[] storage postIDs;
-        users[msg.sender] = User(numUsers, _email, _name, msg.sender, 0, postIDs);
+        users[msg.sender] = User(numUsers, _email, _name, msg.sender, 0, new uint[](0));
         return true;
     }
 

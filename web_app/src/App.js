@@ -54,10 +54,11 @@ class App extends Component {
       console.log(account)
       this.BlogStorageContract.deployed().then((BlogStorageInstance) => {
         this.BlogStorageInstance = BlogStorageInstance;
-        this.BlogStorageInstance.postsCount().then((numPostsCount) => {
-          this.setState({userPostsNum: numPostsCount});
+        this.BlogStorageInstance.getNumUserPosts({from: account}).then((numPostsCount) => {
+          console.log(numPostsCount.toNumber());
+          this.setState({userPostsNum: numPostsCount.toNumber()});
           console.log(this.state.userPostsNum);
-          this.getPosts(numPostsCount);
+          this.getUserPosts(numPostsCount);
         });
       });
       this.LoginContract.deployed().then((LoginInstance) => {
@@ -68,7 +69,7 @@ class App extends Component {
 
   userLogin = async (email) => {
     console.log(email)
-    if(await this.LoginInstance.signIn(email)) {
+    if(await this.BlogStorageInstance.signIn(email)) {
       console.log("User Signed In");
       this.setState({login: true})
       return
@@ -81,7 +82,7 @@ class App extends Component {
     console.log(name)
     const { account } = this.state;
     console.log(account)
-    if(await this.LoginInstance.addUser(email, name, {from: account})) {
+    if(await this.BlogStorageInstance.addUser(email, name, {from: account})) {
       console.log("User Signed In");
       this.setState({login: true})
       return
@@ -89,21 +90,31 @@ class App extends Component {
     console.log("Failed")
   }
 
-  getPosts =  async (numPosts) => {
-    console.log(numPosts)
-    for (let i = numPosts; i >= 1; i--) {
-      let blogId = i;
-      let blogHash =  await this.BlogStorageInstance.getPostHash(i);
-      let blogTitle =  await this.BlogStorageInstance.getPostName(i);
-      let hash = "/ipfs/"+blogHash
+  getUserPosts =  async (numPosts) => {
+    console.log(numPosts.toNumber())
+    for (let i = numPosts.toNumber()-1; i >= 0; i--) {
+      let blogObj = {};
+      this.BlogStorageInstance.getUserPostID(i).then( async (blogId) => {
+        console.log(blogId.toNumber())
+        blogObj.id = blogId.toNumber();
 
-      let blog = {id: blogId, hash: blogHash, title: blogTitle};
+        await this.BlogStorageInstance.getPostHash(blogId.toNumber()).then(async (blogHash) => {
+            console.log(blogHash)
+            blogObj.hash = blogHash;
+          });
 
-      this.setState({
-        userBlogs: [...this.state.userBlogs, blog]
-      })
+        await this.BlogStorageInstance.getPostName(blogId.toNumber()).then(async (blogTitle) => {
+          console.log(blogTitle)
+          blogObj.title = blogTitle;
+          console.log("blog", blogObj.id, blogObj.hash, blogObj.title)
+          this.setState({
+            userBlogs: [...this.state.userBlogs, blogObj] })
+
+        })
+
+      });
+
     }
-
 
   }
 
@@ -128,7 +139,15 @@ class App extends Component {
 
       const { account } = this.state;
 
-      await this.BlogStorageInstance.addPost(result[0].hash, title, {from: account});
+      await this.BlogStorageInstance.addPost(result[0].hash, title, {from: account}).then( async (blogId) => {
+        // await this.LoginInstance.newPost(blogId, {from: account});
+        console.log(blogId);
+        let blog = {id: blogId, hash: result[0].hash, title};
+        this.setState({
+          userBlogs: [...this.state.userBlogs, blog]
+        })
+      });
+
     });
   }
 
