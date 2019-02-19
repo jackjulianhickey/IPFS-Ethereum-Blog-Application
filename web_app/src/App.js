@@ -138,7 +138,7 @@ class App extends Component {
           followingBlog.title = blogTitle;
           console.log("blog", followingBlog.id, followingBlog.hash, followingBlog.title)
           this.setState({
-            following: [...this.state.followingBlogs, followingBlog] })
+            followingBlogs: [...this.state.followingBlogs, followingBlog] })
 
         })
       })
