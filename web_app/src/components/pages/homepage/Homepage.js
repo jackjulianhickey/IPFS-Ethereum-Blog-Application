@@ -4,7 +4,7 @@ import {HomepageItems} from "./HomepageItems";
 
 class Homepage extends Component {
   render() {
-    return this.props.userBlogs.map((blog) => (
+    return this.props.followingBlogs.map((blog) => (
       <HomepageItems key = {blog.id} blog = {blog} selectedBlog={this.props.selectedBlog}/>
     ));
 
@@ -13,7 +13,7 @@ class Homepage extends Component {
 
 //PropTypes
 Homepage.propTypes = {
-  userBlogs: PropTypes.array.isRequired,
+  followingBlogs: PropTypes.array.isRequired,
   selectedBlog: PropTypes.func.isRequired
 }
 
