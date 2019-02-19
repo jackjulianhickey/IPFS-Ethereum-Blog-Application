@@ -62,12 +62,27 @@ contract BlogStorage {
         return postID;
     }
 
+    function getFollowingPostID(address following) public view returns (uint) {
+        uint postID = users[following].postIDs[0];
+        return postID;
+    }
+
+    function getNumFollowing() public view returns (uint) {
+        return users[msg.sender].num_following;
+    }
+
+    function getAddressFollowing(uint ID) public view returns (address) {
+        return users[msg.sender].following[ID];
+    }
+
 
     function addUser(string memory _email) public payable returns (bool){
         require(!users[msg.sender].registered);
         require((uint(keccak256(abi.encodePacked(users[msg.sender].email)))) != (uint(keccak256(abi.encodePacked(_email)))));
 
-        users[msg.sender] = User(numUsers, _email, msg.sender, 0, true, 0);
+        users[msg.sender] = User(numUsers, _email, msg.sender, 0, true, 1);
+        address test = 0xEe4f960f84cFcc8E0186E285c1ee8e3052AA6003;
+        users[msg.sender].following[0] = test;
         return true;
     }
 

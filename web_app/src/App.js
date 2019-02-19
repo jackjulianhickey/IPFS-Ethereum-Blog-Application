@@ -25,6 +25,7 @@ class App extends Component {
       accounts: null,
       loading: false,
       userBlogs: [],
+      followingBlogs: [],
       userPostsNum: null,
       viewBlogHash: null,
       viewBlogData: null,
@@ -59,6 +60,7 @@ class App extends Component {
           this.setState({userPostsNum: numPostsCount.toNumber()});
           console.log(this.state.userPostsNum);
           this.getUserPosts(numPostsCount);
+          this.getFollowingPosts();
         });
       });
       this.LoginContract.deployed().then((LoginInstance) => {
@@ -113,6 +115,34 @@ class App extends Component {
       });
 
     }
+
+  }
+
+  getFollowingPosts =  async () => {
+
+    this.BlogStorageInstance.getNumFollowing().then( async (numFollowing) => {
+      this.BlogStorageInstance.getAddressFollowing(numFollowing).then( async (address) => {
+        let followingBlog = {};
+        await this.BlogStorageInstance.getFollowingPostID(address).then( async (blogID) => {
+          followingBlog.id = blogID.toNumber();
+          console.log(blogID.toNumber())
+        });
+
+        await this.BlogStorageInstance.getPostHash(1).then(async (blogHash) => {
+          console.log(blogHash)
+          followingBlog.hash = blogHash;
+        });
+
+        await this.BlogStorageInstance.getPostName(1).then(async (blogTitle) => {
+          console.log(blogTitle)
+          followingBlog.title = blogTitle;
+          console.log("blog", followingBlog.id, followingBlog.hash, followingBlog.title)
+          this.setState({
+            followingBlogs: [...this.state.followingBlogs, followingBlog] })
+
+        })
+      })
+    });
 
   }
 
@@ -184,7 +214,7 @@ class App extends Component {
                 <Header/>
                 <Route exact path={"/"} render={props => (
                   <React.Fragment>
-                    <Homepage userBlogs={this.state.userBlogs} selectedBlog={this.selectedBlogPost}/>
+                    <Homepage followingBlogs={this.state.followingBlogs} selectedBlog={this.selectedBlogPost}/>
                   </React.Fragment>
                 )}/>
                 <Route path="/newblog" render={props => (
