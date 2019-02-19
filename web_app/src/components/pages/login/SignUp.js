@@ -17,14 +17,6 @@ class SignUp extends Component{
             placeholder={"Enter your email address"}
             value={this.props.email}
             onChange={this.props.onChange}/>
-
-            <input
-            type={"text"}
-            name={"userName"}
-            style={titleStyle}
-            placeholder={"Enter your name"}
-            value={this.props.userName}
-            onChange={this.props.onChange}/>
         </div>
         <div>
           <input
@@ -67,8 +59,7 @@ const blogStyle = {
 SignUp.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
-  email: PropTypes.string.isRequired,
-  userName: PropTypes.string.isRequired
+  email: PropTypes.string.isRequired
 }
 
 export default SignUp

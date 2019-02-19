@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 class Login extends Component{
   state = {
     email: '',
-    userName: '',
     newEmail: ''
   }
 
@@ -19,7 +18,7 @@ class Login extends Component{
 
   onSubmitSignUp = (e) => {
     e.preventDefault();
-    this.props.signUp(this.state.newEmail, this.state.userName);
+    this.props.signUp(this.state.newEmail);
     this.setState({ email: '' });
   }
 
@@ -32,7 +31,7 @@ class Login extends Component{
     return (
       <div style={loginStyle}>
         <LoginForm onSubmit = {this.onSubmitLogin} onChange = {this.onChange} email = {this.state.email}/>
-        <SignUp onSubmit = {this.onSubmitSignUp} onChange = {this.onChange} email = {this.state.newEmail} userName = {this.state.userName} />
+        <SignUp onSubmit = {this.onSubmitSignUp} onChange = {this.onChange} email = {this.state.newEmail} />
       </div>
       );
   }
